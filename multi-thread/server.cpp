@@ -120,7 +120,7 @@ void process_cli(int connectfd, sockaddr_in client)
 		cout << "Received client(" << cli_name << ") message: " << recvbuf << endl;
 		reverse(recvbuf, recvbuf + strlen(recvbuf));
 		strcpy(sendbuf, recvbuf);
-		send(connectfd, sendbuf, strlen(sendbuf), 0);
+		send(connectfd, sendbuf, strlen(sendbuf) - 1, 0);
 	}
 	close(connectfd);
 	return;
