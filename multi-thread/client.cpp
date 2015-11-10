@@ -97,7 +97,7 @@ void process(FILE *fp, int sockfd)
 	//重复从标准输入获得用户输入的字符串直到用户输入ctrl + D
 	while(getMessage(sendline, c_data_size, fp) != nullptr)
 	{
-		send(sockfd, sendline, strlen(sendline), 0);
+		send(sockfd, sendline, strlen(sendline) - 1, 0);	//-1去除回车
 		//接收并显示来自服务器的信息
 		if((numbytes = recv(sockfd, recvline, c_data_size, 0)) == 0)
 		{
