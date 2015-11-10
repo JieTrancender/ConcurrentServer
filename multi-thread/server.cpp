@@ -120,7 +120,7 @@ void process_cli(int connectfd, sockaddr_in client)
 		cout << "Received client(" << cli_name << ") message: " << recvbuf << endl;
 		reverse(recvbuf, recvbuf + strlen(recvbuf));
 		strcpy(sendbuf, recvbuf);
-		send(connectfd, sendbuf, strlen(sendbuf) - 1, 0);
+		send(connectfd, sendbuf, strlen(sendbuf), 0);	//在用reverse()函数的时候已经去除了回车的影响，所以这里不减一
 	}
 	close(connectfd);
 	return;
