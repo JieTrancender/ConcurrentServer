@@ -38,8 +38,8 @@
       
       2) 父进程中调用fork之前打开的所有描述字在函数fork返回之后子进程回得到一个副本。fork执行后，父、子进程均需要将自己不使用的描述字关闭。防止出现不同步的情况和保证最后能正常关闭描述字
       
-    代码实例：
-<www.github.com/JieTrancender>  
-See my [About](demo-first.cpp) page for details    
-[Code](http://github.com/JieTrancender/ConcurrentServer/blob/master/multi-process-demo/demo-first.cpp) has no title attribute
+三、代码实例：
+<www.github.com/JieTrancender/>  
+The first [Demo](demo-first.cpp) for multi process program .    
+
 
