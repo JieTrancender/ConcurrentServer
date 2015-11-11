@@ -76,7 +76,17 @@
       
       2) 由于UNIX信号不排队，在SIGCHLD信号同时到来后，信号处理程序中调用了wait函数，其只执行一次，将留下其它的僵尸进程，可以使用waitpid函数解决这个问题
   
+  2 waitpid()函数 - 等待指定进程的子进程返回，并修改状态
+  
+    函数原型：
     
+      #include <sys/types.h>  
+      #include <sys/wait.h>  
+      pid_t waitpid(pid_t pid, int *stat_loc, int option);  
+      
+      第一个参数
+      
+      
       
 三、代码实例：
 
