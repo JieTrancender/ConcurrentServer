@@ -20,7 +20,7 @@
     
 二、创建进程
 
-  1 fork()函数 - 创建进程
+  1 fork()函数 - 创建新进程
   
     函数原型：
     
@@ -38,8 +38,25 @@
       
       2) 父进程中调用fork之前打开的所有描述字在函数fork返回之后子进程回得到一个副本。fork执行后，父、子进程均需要将自己不使用的描述字关闭。防止出现不同步的情况和保证最后能正常关闭描述字
       
+  2 vfork()函数 - 创建新进程
+  
+    函数原型：
+    
+      #include <sys/types.h>
+      
+      #include <unistd.h>
+      
+      pid_t vfork(void);
+      
+      父进程中返回子进程的进程ID，子进程返回0，出错时返回-1
+      
+    注：
+      1) 在BSD3.0中开始出现，主要是为了解决fork昂贵的开销。它是完全共享的创建，新老进程共享同样的资源，完全没有拷贝
+      
+      2) 两者的区别在于当使用vfork()创建新进程时，父进程暂时阻塞，而子进程则可以借用父进程的地址空间。当子进程推出或调用execve()函数时父进程才继续执行
+      
 三、代码实例：
-  <www.github.com/JieTrancender>  
-  The first [Demo](demo-first.cpp) for multi process program .    
+
+  The first [Demo](demo-first.cpp) with fork function for multi process program .    
 
 
