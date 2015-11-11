@@ -80,17 +80,24 @@
   
     函数原型：
     
-      #include <sys/types.h>  
-      #include <sys/wait.h>  
-      pid_t waitpid(pid_t pid, int *stat_loc, int option);  
+      #include <sys/types.h
       
-      第一个参数
+      #include <sys/wait.h>
       
+      pid_t waitpid(pid_t pid, int *stat_loc, int option);
       
+      第一个参数pid：-1表示要求直到任何一个子进程的返回状态(等待第一个终止的子进程)，> 0表示要求知道进程号为pid的子进程状态，< 0表示要求直到进程组号为pid的绝对值的子进程状态
+      
+      第二个参数stat_loc：存储子进程的终止状态
+      
+      第三个参数options：WUNTRACED表示如果进程进入暂停执行情况则马上返回，但结束状态不予理会，WNOHANG表示如果没有任何已经结束的子进程则马上返回，不予等待
+      
+      成功返回进程的ID，出错返回-1
       
 三、代码实例：
 
   The first [Demo](demo-first.cpp) with fork function for multi process program .  
   The second [Demo](demo-second.cpp) with vfork function for multi process program .
+  The third [Demo](demo-third.cpp) with wait function for multi process program .
 
 
