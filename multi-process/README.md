@@ -55,8 +55,32 @@
       
       2) 两者的区别在于当使用vfork()创建新进程时，父进程暂时阻塞，而子进程则可以借用父进程的地址空间。当子进程推出或调用execve()函数时父进程才继续执行
       
+三、终止进程
+
+  1 wait()函数 - 等待一个子进程返回并修改状态
+  
+    函数原型：
+    
+      #include <sys/types.h>
+      
+      #include <sys/wait.h>
+      
+      pid_t wait(int *stat_loc);
+      
+      参数stat_loc存储子进程的终止状态
+      
+      成功返回子进程的ID;出错返回-1;
+      
+    注：
+      1) 如果没有终止的子进程，但有一个或多个正在执行的子进程，则该函数阻塞，直到有一个子进程终止或者wait被信号中断，wait返回。当系统调用该函数时，如果由一个子进程已经结束，则该系统调用立即返回，并释放子进程所有资源
+      
+      2) 由于UNIX信号不排队，在SIGCHLD信号同时到来后，信号处理程序中调用了wait函数，其只执行一次，将留下其它的僵尸进程，可以使用waitpid函数解决这个问题
+  
+    
+      
 三、代码实例：
 
-  The first [Demo](demo-first.cpp) with fork function for multi process program .    
+  The first [Demo](demo-first.cpp) with fork function for multi process program .  
+  The second [Demo](demo-second.cpp) with vfork function for multi process program .
 
 
