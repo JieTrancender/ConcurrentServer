@@ -97,7 +97,7 @@
 三、代码实例：
 
   The first [Demo](demo-first.cpp) with fork function for multi process program .  
-  The second [Demo](demo-second.cpp) with vfork function for multi process program .
+  The second [Demo](demo-second.cpp) with vfork function for multi process program .  
   The third [Demo](demo-third.cpp) with wait function for multi process program .
 
 
