@@ -40,6 +40,6 @@
       
     代码实例：
 <www.github.com/JieTrancender>  
-See my [About](/demo-first.cpp) page for details    
-[Code](http://github.com/JieTrancender/ConcurrentServer/multi-process-demo/demo-first.cpp) has no title attribute
+See my [About](demo-first.cpp) page for details    
+[Code](http://github.com/JieTrancender/ConcurrentServer/blob/master/multi-process-demo/demo-first.cpp) has no title attribute
 
