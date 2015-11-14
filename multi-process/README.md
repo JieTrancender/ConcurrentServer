@@ -76,7 +76,7 @@
       
       2) 由于UNIX信号不排队，在SIGCHLD信号同时到来后，信号处理程序中调用了wait函数，其只执行一次，将留下其它的僵尸进程，可以使用waitpid函数解决这个问题
   
-  2 waitpid()函数 - 等待指定进程的子进程返回，并修改状态
+  2 waitpid()函数 - 等待指定进程的子进程返回，并修改状态 -- [DemoFourth](demo-fourth.cpp)  [DemoFifth](demo-fifth.cpp)
   
     函数原型：
     
@@ -99,5 +99,7 @@
   The first [Demo](demo-first.cpp) with fork function for multi process program .  
   The second [Demo](demo-second.cpp) with vfork function for multi process program .  
   The third [Demo](demo-third.cpp) with wait function for multi process program .
+  The fourth [Demo](demo-fourth.cpp) with wait function for multi process program .
+  The fifth [Demo](demo-fifth.cpp) with wait function for multi process program .
 
 
