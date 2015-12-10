@@ -30,9 +30,11 @@ int main(int argc, char **argv)
 	Wrapper *w = new Wrapper();
 	std::thread w1 = w->member1Thread();
 	std::thread w2 = w->member2Thread("hello", 100);
+	std::thread w3(&Wrapper::member2,w,"world",0);
 
 	w1.join();
 	w2.join();
+	w3.join();
 
 	return 0;
 }
