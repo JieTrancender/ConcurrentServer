@@ -49,20 +49,13 @@ void thread_b()
 
 int main(int argc, char **argv)
 {
-	//std::thread thread_first(thread_a);
-	//std::thread thread_second(thread_b);//thread_b执行失败，
-
-	//thread_first.join();
-	//thread_second.join();
-
 	std::vector<std::thread> my_vector(100);
 	for (auto it = my_vector.begin(); it != my_vector.end(); ++it)
 		*it = std::thread(low_level_func);
-	//for (auto &iter : my_vector)
-	//	iter.join();
+
 	for (auto it = my_vector.begin(); it != my_vector.end(); ++it)
 	{
-		//if (it->joinable())
+		if (it->joinable())
 			it->join();
 	}
 	return 0;
