@@ -11,7 +11,7 @@ class HierarchicalMutex
 	std::mutex internal_mutex;	//内部互次元
 	unsigned long const hierarchy_value;	//层次值
 	unsigned long previous_hierarchy_value;
-	static unsigned long this_thread_hierarchy_value;	//thread_loal的值来表示当前线程的层次值
+	static thread_local unsigned long this_thread_hierarchy_value;	//thread_loal的值来表示当前线程的层次值
 
 	//检查是否违背层次规则
 	void check_for_hierarchy_violation()
@@ -62,6 +62,6 @@ public:
 	}
 };
 
-unsigned long HierarchicalMutex::this_thread_hierarchy_value(ULONG_MAX);	//当前线程层次值初始化为最大值
+thread_local unsigned long HierarchicalMutex::this_thread_hierarchy_value(ULONG_MAX);	//当前线程层次值初始化为最大值
 
 #endif	//hierarical_mutex.hpp
