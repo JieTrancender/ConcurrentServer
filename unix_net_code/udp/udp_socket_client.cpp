@@ -1,0 +1,78 @@
+/*************************************************************************
+    > File Name: udp_socket_client.cpp
+    > Author: Jie Mo
+    > Email: 582865471@vip.qq.com 
+    > Github: JieTrancender 
+    > Created Time: Sat Apr  9 11:13:52 2016
+ ************************************************************************/
+#include <iostream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>  //close's head file
+#include <netinet/in.h>  //INADDR_ANY's head file
+#include <netdb.h>  //gethostbyname's head file
+#include <memory.h>
+
+const unsigned short int c_port = 1234;
+const int c_max_data_size = 1024;
+
+int main(int argc, char** argv)
+{
+	int fd, num_byte;
+	char buf[c_max_data_size];
+	struct hostent *he;
+	struct sockaddr_in server, reply;
+
+	if (argc != 3)
+	{
+		std::cerr << "Usage:" << argv[0] << " <IP Address><message>" << std::endl;
+		exit(1);
+	}
+
+	if ((he = gethostbyname(argv[1])) == nullptr)
+	{
+		std::cerr << "Failed to get host." << std::endl;
+		exit(1);
+	}
+
+	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	{
+		std::cerr << "Failed to create socket." << std::endl;
+		exit(1);
+	}
+
+	server.sin_family = AF_INET;
+	server.sin_port = htons(c_port);
+	server.sin_addr = *((struct in_addr*)he->h_addr);
+	memset(server.sin_zero, 0, sizeof(server.sin_zero));
+
+	sendto(fd, argv[2], strlen(argv[2]), 0, (struct sockaddr*)&server, sizeof(struct sockaddr));
+
+	while(true)
+	{
+		socklen_t len;
+
+		if ((num_byte = recvfrom(fd, buf, c_max_data_size, 0, (struct sockaddr*)&reply, &len)) == -1)
+		{
+			std::cerr << "Failed to recv." << std::endl;
+			close(fd);
+			exit(1);
+		}
+
+		//因为UDP为无连接的，所以为了避免接收到的消息来自其他服务器，需要进行相应判断。
+		//比较地址长度len是否等于结构sockaddr的长度
+		//比较server与reply的内容是否是一致
+		//server与reply的比较应转换成常量指针以后用memcmp函数进行比较
+		if (len != sizeof(struct sockaddr) || memcmp((const void*)&server, (const void*)&reply, len) != 0)
+		{
+			std::cerr << "Wrong, receive message from other server." << std::endl;
+			continue;
+		}
+		buf[num_byte] = '\0';
+		
+		std::cout << "Server message:" << buf << std::endl;
+		break;
+	}
+	close(fd);
+	return 0;
+}
