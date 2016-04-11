@@ -49,8 +49,6 @@ int main(int argc, char** argv)
 
 	sendto(fd, argv[2], strlen(argv[2]), 0, (struct sockaddr*)&server, sizeof(struct sockaddr));
 
-	std::cout << "test#server:" << server.sin_family << ", " << server.sin_port << ", " << inet_ntoa(server.sin_addr) << ", " << server.sin_zero << std::endl;
-
 	while(true)
 	{
 		socklen_t len;
@@ -66,16 +64,13 @@ int main(int argc, char** argv)
 		//比较地址长度len是否等于结构sockaddr的长度
 		//比较server与reply的内容是否是一致
 		//server与reply的比较应转换成常量指针以后用memcmp函数进行比较
-	/*	if (len != sizeof(struct sockaddr) || memcmp((const void*)&server, (const void*)&reply, len) != 0)
+		if (len != sizeof(struct sockaddr) || memcmp((const void*)&server, (const void*)&reply, len) != 0)
 		{
 			std::cout << "len = " << len << ", sizeof sockaddr = " << sizeof(struct sockaddr) << ", server.s_addr = " << inet_ntoa(server.sin_addr) << std::endl;
-			std::cout << "first = " << (int)(len == sizeof(struct sockaddr)) << ", second = " << (int)(memcmp((const void*)&server, (const void*)&reply, len)) << std::endl;
-			std::cout << "server:" << server.sin_family << ", " << server.sin_port << ", " << inet_ntoa(server.sin_addr) << ", " << server.sin_zero << std::endl;
-			std::cout << "reply:" << server.sin_family << ", " << server.sin_port << ", " << inet_ntoa(server.sin_addr) << ", " << server.sin_zero << std::endl;
+			std::cout << "first = " << len == sizeof(struct sockaddr) << ", second = " << memcmp((const void*)&server, (const void*)&reply, len) << std::endl;
 			std::cerr << "Wrong, receive message from other server." << std::endl;
 			continue;
 		}
-	*/
 		buf[num_byte] = '\0';
 		
 		std::cout << "Server message:" << buf << std::endl;

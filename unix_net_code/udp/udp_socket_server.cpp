@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 		msg[num] = '\0';
 
 		std::cout << "You got a message(" << msg << ") from " << inet_ntoa(client.sin_addr) << std::endl;
-		sendto(sockfd, "Welcome to my server.\n", 22, 0, (struct sockaddr*)&client, sin_size);
+		sendto(sockfd, "Welcome to my server.", 21, 0, (struct sockaddr*)&client, sin_size);
 
 		if (strcmp(msg, "quit") == 0)
 		{
