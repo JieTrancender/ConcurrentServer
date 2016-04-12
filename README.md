@@ -2,7 +2,10 @@
 
 The demo is concurrent server with c/c++ in *unix enviroment
 
-编译：
-  Unix:g++ xxx.cpp -std=c++11 -pthread 
+#compile#
+
+	##Unix pthread:##
+		g++ xxx.cpp -std=c++11 -pthread 
   
-  C++11:g++ xxx.cpp -std=c++11
+	##C++11	thread:##
+		g++ xxx.cpp -std=c++11 -pthread
