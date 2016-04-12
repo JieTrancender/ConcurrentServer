@@ -1,31 +1,40 @@
 /*************************************************************************
-    > File Name: multi_process_tcp_socket_server.cpp
+    > File Name: multi_thread_tcp_socket_server.cpp
     > Author: Jie Mo
     > Email: 582865471@vip.qq.com 
     > Github: JieTrancender 
-    > Created Time: Mon Apr 11 18:51:16 2016
+    > Created Time: Tue Apr 12 14:39:24 2016
  ************************************************************************/
 #include <iostream>
+#include <cstdlib>
+#include <unistd.h>
+#include <memory.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>  //INADDR_ANY's header
-#include <unistd.h>  //close's header
-#include <memory.h>
-#include <cstdlib>
-#include <arpa/inet.h>  //inet_ntoa's header
+#include <pthread.h>
 #include <cstring>
+#include <netinet/in.h>  //INADDR_ANY's header
+#include<arpa/inet.h>  //inet_ntoa's header
 
 const unsigned short int c_port = 1234;
 const int c_max_connection = 4;
 const int c_max_data_size = 1024;
 
+struct Arg
+{
+	int connectfd;
+	struct sockaddr_in client;
+};
+
+void* start_routine(void *arg);
 void process_client(int connectfd, struct sockaddr_in client);
 
 int main(int argc, char** argv)
 {
-	struct sockaddr_in server, client;
 	int listenfd, connectfd;
-	pid_t pid;
+	struct sockaddr_in server, client;
+	Arg *arg;
+	pthread_t thread;
 
 	if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
@@ -53,29 +62,23 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
-	socklen_t sin_size = sizeof(struct  sockaddr_in);
+	socklen_t sin_size = sizeof(struct sockaddr_in);
 	while(true)
 	{
 		if ((connectfd = accept(listenfd, (struct sockaddr*)&client, &sin_size)) == -1)
 		{
-			std::cout << "Failed to accept." << std::endl;
+			std::cerr << "Failed to accept." << std::endl;
 			close(listenfd);
 			exit(1);
 		}
+		
+		arg = new Arg;
+		arg->connectfd = connectfd;
+		memcpy((void*)&arg->client, &client, sizeof(client));
 
-		if (pid = fork() > 0)
+		if (pthread_create(&thread, nullptr, start_routine, (void*)arg))
 		{
-			close(connectfd);
-			continue;
-		}
-		else if (pid == 0)
-		{
-			close(listenfd);
-			process_client(connectfd, client);
-		}
-		else
-		{
-			std::cerr << "Failed to fork." << std::endl;
+			std::cerr << "Failed to create thread." << std::endl;
 			close(listenfd);
 			exit(1);
 		}
@@ -84,35 +87,42 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+void* start_routine(void *arg)
+{
+	Arg *info;
+	info = (Arg*)arg;
+
+	process_client(info->connectfd, info->client);
+	delete info;
+	pthread_exit(nullptr);
+}
+
 void process_client(int connectfd, struct sockaddr_in client)
 {
-	int num_byte;
+	int num;
 	char recvbuf[c_max_data_size], sendbuf[c_max_data_size], client_name[c_max_data_size];
 
 	std::cout << "You got a connection from " << inet_ntoa(client.sin_addr);
-	num_byte = recv(connectfd, client_name, c_max_data_size, 0);
-	if (num_byte == 0)
+
+	if ((num = recv(connectfd, client_name, c_max_data_size, 0)) == 0)
 	{
-		std::cerr << "Failed to connecte client." << std::endl;
+		std::cerr << "Wrong, client disconnected." << std::endl;
 		close(connectfd);
-		exit(1);
+		return;
 	}
-	client_name[num_byte - 1] = '\0';
+	client_name[num - 1] = '\0';
+	std::cout << ", client's name is " << client_name << std::endl;
 
-	std::cout << ", Client's name is " << client_name << std::endl;
-
-	while (num_byte = recv(connectfd, recvbuf, c_max_data_size, 0))
+	while (num = recv(connectfd, recvbuf, c_max_data_size, 0))
 	{
-		recvbuf[num_byte] = '\0';
-		
+		recvbuf[num] = '\0';
 		std::cout << "Received client(" << client_name << ") message:" << recvbuf;
 
-		for (int i = 0; i < num_byte - 1; ++i)
+		for (int i = 0; i < num - 1; ++i)
 		{
-			sendbuf[i] = recvbuf[num_byte - i - 2];
+			sendbuf[i] = recvbuf[num - i - 2];
 		}
-		sendbuf[num_byte - 1] = '\0';
-
+		sendbuf[num - 1] = '\0';
 		send(connectfd, sendbuf, strlen(sendbuf), 0);
 	}
 	close(connectfd);
