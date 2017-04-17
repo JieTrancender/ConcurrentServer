@@ -202,3 +202,67 @@ static void modify_event(int epollfd, int fd, int state)
     ev.data.fd = fd;
     epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
 }
+
+/*class EpollEchoServer
+{
+public:
+    EpollEchoServer(int port)
+    :port_(port), listenfd_(socket_bind()), epollfd_(epoll_create(FDSIZE))
+    {
+        memset(buf, 0, strlen(buf));
+    }
+    
+    int socket_bind()
+    {
+        int listenfd;
+        struct sockaddr_in serverAddr;
+        listenfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (listenfd == -1)
+        {
+            fprintf(stderr, "%s\n", "socket error!");
+            exit(1);
+        }
+        //memset(&serverAddr, 0, sizeof(serverAddr));
+        bzero(&serverAddr, sizeof(serverAddr));
+        serverAddr.sin_family = AF_INET;
+        inet_pton(AF_INET, ip_, &serverAddr.sin_addr);
+        serverAddr.sin_port = htons(port);
+        if (bind(listenfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
+        {
+            fprintf(stderr, "%s\n", "bind error!");
+            exit(1);
+        }
+        return listenfd;
+    }
+
+    void do_epoll()
+    {
+        
+    }
+
+static void do_epoll(int listenfd)
+{
+    int epollfd;
+    //struct epoll_event events[EPOLLEVENTS];
+    int ret;
+    //char buf[MAXSIZE];
+    //memset(buf, 0, strlen(buf));
+    //epollfd = epoll_create(FDSIZE);
+    add_event(epollfd, listenfd, EPOLLIN);
+    for ( ; ;)
+    {
+        ret = epoll_wait(epollfd, events, EPOLLEVENTS, -1);
+        handle_events(epollfd, events, ret, listenfd, buf);
+    }
+    close(epollfd);
+}
+
+private:
+    static const char* ip_ = "127.0.0.1";
+    int port_;
+    int listenfd_;
+    struct epoll_event events[EPOLLEVENTS];
+    int epollfd_;
+    char buf_[MAXSIZE];
+};
+*/
