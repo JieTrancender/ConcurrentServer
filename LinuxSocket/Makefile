@@ -15,6 +15,12 @@ echoPacketSelectServer: echoPacketSelectServer.o
 echoPacketSelectServer.o: echoPacketSelectServer.cpp helper.h
 	$(bin) -c echoPacketSelectServer.cpp
 
+echoPacketSelectClient: echoPacketSelectClient.o
+	$(bin) -o echoPacketSelectClient echoPacketSelectClient.o
+
+echoPacketSelectClient.o: echoPacketSelectClient.cpp helper.h
+	$(bin) -c echoPacketSelectClient.cpp
+
 echoSocketClient.o: echoSocketClient.cpp socket_exception.h tcp_socket.h tcp_client.h
 	$(bin) -c echoSocketClient.cpp
 
@@ -33,4 +39,5 @@ tcp_server.o: tcp_server.cpp tcp_server.h socket_exception.h tcp_client.h tcp_so
 .PHONY: clean
 
 clean:
-	-rm echoSocketClient $(objects1) echoSocketServer.o tcp_server.o echoPacketSelectServer.o echoPacketSelectServer
+	-rm echoSocketClient $(objects1) echoSocketServer.o tcp_server.o echoPacketSelectServer.o echoPacketSelectServer \
+		echoPacketSelectClient.o echoPacketSelectClient

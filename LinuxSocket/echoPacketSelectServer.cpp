@@ -11,27 +11,29 @@ using namespace std;
 
 const int g_maxConn = 200;
 
-void echo(int clientfd, struct sockaddr_in clientAddr);
 int main()
 {
+    struct sockaddr_in clientAddr;
+    socklen_t addrLen;
     int listenfd = socket(AF_INET, SOCK_STREAM, 0);
     if (listenfd == -1)
     {
-        cerr << "socket error " << endl;
-        exit(1);
-    }
-    int on = 1;
-    if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1)
-    {
-        cerr << "setsockopt error" << endl;
+        cerr << "socket error" << endl;
         exit(1);
     }
 
-    struct sockaddr_in serverAddr;
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(8000);
-    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if (bind(listenfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
+    int on = 1;
+    if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) ==-1)
+    {
+        cerr << "setsocketopt error" << endl;
+        exit(1);
+    }
+
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(8000);
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    if (bind(listenfd, (const struct sockaddr*)&addr, sizeof(addr)) == -1)
     {
         cerr << "bind error" << endl;
         exit(1);
@@ -43,108 +45,135 @@ int main()
         exit(1);
     }
 
-    struct sockaddr_in clientAddr;
-    socklen_t addrLen = sizeof(clientAddr);
-
-    while (true)
-    {
-        int clientFd = accept(listenfd, (struct sockaddr*)&clientAddr, &addrLen);
-        if (clientFd == -1)
-        {
-            cerr << "accept error" << endl;
-            exit(1);
-        }
-
-        cout << "client information: " << inet_ntoa(clientAddr.sin_addr) << ", " << ntohs(clientAddr.sin_port) << endl;
-        
-        pid_t pid = fork();
-        if (pid == -1)
-        {
-            cerr << "fork error" << endl;
-            exit(1);
-        }
-        else if (pid > 0)
-        {
-            close(clientFd);
-        }
-        else if (pid == 0)
-        {
-            close(listenfd);
-            echo(clientFd, clientAddr);
-            exit(EXIT_SUCCESS);
-        }
-    }
-    close(listenfd);
-}
-
-void echo(int clientfd, struct sockaddr_in clientAddr)
-{
-    struct Packet buf;
+    int maxfd = listenfd;
     fd_set rset;
-    //确保标准输入不会被重定向
-    int fd_stdin = fileno(stdin);
-    int maxfd = fd_stdin > clientfd ? fd_stdin : clientfd;
+    fd_set allset;
+    FD_ZERO(&rset);
+    FD_ZERO(&allset);
+    FD_SET(listenfd, &allset);
+
+    //用来保存已连接的客户端套接字
+    int client[FD_SETSIZE];
+    for (int i = 0; i < FD_SETSIZE; ++i)
+    {
+        client[i] = -1;
+    }
+
+    int maxi = 0;
+
     while (true)
     {
-        FD_ZERO(&rset);
-        FD_SET(fd_stdin, &rset);
-        FD_SET(clientfd, &rset);
+        rset = allset;
         int nReady = select(maxfd + 1, &rset, nullptr, nullptr, nullptr);
         if (nReady == -1)
         {
+            if (errno == EINTR)
+            {
+                continue;
+            }
+
             cerr << "select error" << endl;
             exit(1);
         }
         else if (nReady == 0)
         {
+            //nReady == 0表示超时，但是此处是一定不会发生的
             continue;
         }
 
-        if (FD_ISSET(fd_stdin, &rset))
+        if (FD_ISSET(listenfd, &rset))
         {
-            memset(buf.data, 0, sizeof(buf));
-            if (fgets(buf.data, sizeof(buf.data), stdin) == nullptr)
+            addrLen = sizeof(clientAddr);
+            int connfd = accept(listenfd, (struct sockaddr*)&clientAddr, &addrLen);
+            if (connfd == -1)
             {
-                break;
-            }
-            unsigned int lenHost = strlen(buf.data);
-            buf.msgLen = htonl(lenHost);
-
-            if (writen(clientfd, &buf, sizeof(buf.msgLen) + lenHost) == -1)
-            {
-                cerr << "writen socket error" << endl;
+                cerr << "accept error" << endl;
                 exit(1);
+            }
+
+            int i;
+            for (i = 0; i < FD_SETSIZE; ++i)
+            {
+                if (client[i] < 0)
+                {
+                    client[i] = connfd;
+                    if (i > maxi)
+                    {
+                        maxi = i;
+                    }
+                    break;
+                }
+            }
+            if (i == FD_SETSIZE)
+            {
+                cerr << "too many clients" << endl;
+                exit(1);
+            }
+
+            cout << "client information:" << inet_ntoa(clientAddr.sin_addr) << ", " << ntohs(clientAddr.sin_port) << endl;
+
+            FD_SET(connfd, &allset);
+            if (connfd > maxfd)
+            {
+                maxfd = connfd;
+            }
+
+            if (--nReady <= 0)
+            {
+                continue;
             }
         }
 
-        if (FD_ISSET(clientfd, &rset))
+        for (int i = 0; i <= maxi; ++i)
         {
-            memset(&buf, 0, sizeof(buf));
-            int readBytes = readn(clientfd, &buf.msgLen, sizeof(buf.msgLen));
-            if (readBytes == 0)
+            if ((client[i] != -1) && FD_ISSET(client[i], &rset))
             {
+                Packet buf;
+                memset(&buf, 0, sizeof(buf));
+
+                int readBytes = readn(client[i], &buf.msgLen, sizeof(buf.msgLen));
+                if (readBytes == -1)
+                {
+                    cerr << "readn error" << endl;
+                    exit(1);
+                }
+                else if (readBytes == 0)
+                {
+                    cerr << "client connect closed..." << endl;
+                    FD_CLR(client[i], &allset);
+                    close(client[i]);
+                    client[i] = -1;
+                    continue;
+                }
+
+                int lenHost = htonl(buf.msgLen);
+                readBytes = readn(client[i], buf.data, lenHost);
+                if (readBytes == -1)
+                {
+                    cerr << "readn error" << endl;
+                    exit(1);
+                }
+                else if (readBytes != lenHost)
+                {
+                    cerr << "client connect closed..." << endl;
+                    FD_CLR(client[i], &allset);
+                    close(client[i]);
+                    client[i] = -1;
+                    continue;
+                }
+
+                sleep(4);
+                cout << buf.data;
+
+                if (writen(client[i], &buf, sizeof(buf.msgLen) + lenHost) == -1)
+                {
+                    cerr << "writen error" << endl;
+                    exit(1);
+                }
+
+                if (--nReady <= 0)
                 break;
             }
-            else if (readBytes == -1)
-            {
-                cerr << "readn socket error" << endl;
-                exit(1);
-            }
-
-            int lenHost = ntohl(buf.msgLen);
-            readBytes = readn(clientfd, buf.data, lenHost);
-            if (readBytes == -1)
-            {
-                cerr << "readn socket error" << endl;
-                exit(1);
-            }
-            else if (readBytes != lenHost)
-            {
-                cerr << "client closed..." << endl;
-                exit(1);
-            }
-
-            cout << buf.data;
         }
     }
 }
