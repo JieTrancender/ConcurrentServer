@@ -36,6 +36,24 @@ tcp_client.o: tcp_client.cpp tcp_client.h socket_exception.h tcp_socket.h
 tcp_server.o: tcp_server.cpp tcp_server.h socket_exception.h tcp_client.h tcp_socket.h
 	$(bin) -c tcp_server.cpp
 
+testFDSETSIZE: testFDSETSIZE.o tcp_server.o tcp_socket.o tcp_client.o
+	$(bin) -o testFDSETSIZE testFDSETSIZE.o tcp_server.o tcp_socket.o tcp_client.o
+
+testFDSETSIZE.o: testFDSETSIZE.cpp socket_exception.h tcp_socket.h tcp_server.h helper.h tcp_client.h
+	$(bin) -c testFDSETSIZE.cpp
+
+testPoll: testPoll.o tcp_server.o tcp_socket.o tcp_client.o
+	$(bin) -o testPoll testPoll.o tcp_server.o tcp_socket.o tcp_client.o
+
+testPoll.o: testPoll.cpp socket_exception.h tcp_socket.h tcp_server.h helper.h tcp_client.h
+	$(bin) -c testPoll.cpp
+
+testEpoll: testEpoll.o tcp_server.o tcp_socket.o tcp_client.o
+	$(bin) -g -o testEpoll testEpoll.o tcp_server.o tcp_socket.o tcp_client.o
+
+testEpoll.o: testEpoll.cpp socket_exception.h tcp_socket.h tcp_server.h helper.h tcp_client.h
+	$(bin) -c testEpoll.cpp
+
 .PHONY: clean
 
 clean:
